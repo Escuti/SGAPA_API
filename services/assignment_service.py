@@ -90,9 +90,9 @@ class Assignment_Service:
                         }
                 )
 
-                sql='''INSERT INTO actividades (titulo, descripcion, fecha, calificacion, id_grupo)
-                VALUES ( %s, %s, %s, %s, %s)'''
-                cursor.execute(sql, (assignment_data.titulo, assignment_data.descripcion, assignment_data.fecha, assignment_data.calificacion, assignment_data.id_grupo))
+                sql='''INSERT INTO actividades (titulo, descripcion, fecha, id_grupo)
+                VALUES ( %s, %s, %s, %s)'''
+                cursor.execute(sql, (assignment_data.titulo, assignment_data.descripcion, assignment_data.fecha, assignment_data.id_grupo))
                 self.con.commit()
 
                 if cursor.lastrowid:
@@ -140,14 +140,13 @@ class Assignment_Service:
                 # Actualizar campos (excepto estado)
                 update_sql = """
                     UPDATE actividades
-                    SET titulo=%s, descripcion=%s, fecha=%s, calificacion=%s, id_grupo=%s
+                    SET titulo=%s, descripcion=%s, fecha=%s, id_grupo=%s
                     WHERE id_activid=%s
                 """
                 cursor.execute(update_sql, (
                     assignment_data.titulo,
                     assignment_data.descripcion,
                     assignment_data.fecha,
-                    assignment_data.calificacion,
                     assignment_data.id_grupo,
                     assignment_id
                 ))
