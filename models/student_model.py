@@ -5,6 +5,7 @@ from pydantic import BaseModel
 #Modelo de la Tabla Usuario
 
 class Student(BaseModel):
+    nombre: str
     usuario: str
     contraseña: str
     correo: str

@@ -99,9 +99,9 @@ class StudentService:
                         }
                 )
 
-                sql='''INSERT INTO estudiante (usuario, contraseña, correo, telefono, id_grupo, id_pfamilia, estado)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-                cursor.execute(sql, (user_data.usuario, user_data.contraseña, user_data.correo, user_data.telefono, user_data.id_grupo, user_data.id_pfamilia, user_data.estado))
+                sql='''INSERT INTO estudiante (nombre, usuario, contraseña, correo, telefono, id_grupo, id_pfamilia, estado)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+                cursor.execute(sql, (user_data.nombre, user_data.usuario, user_data.contraseña, user_data.correo, user_data.telefono, user_data.id_grupo, user_data.id_pfamilia, user_data.estado))
                 self.con.commit() # ES NECESARIO QUE LA CREACIÓN DE USUARIO INCLUYA QUÉ ROL TIENE ESTE USUARIO, AGREGAR TABLA EN BD Y EN COMODINES DE SENTENCIA SQL
 
                 if cursor.lastrowid:
@@ -266,10 +266,11 @@ class StudentService:
                 # Actualizar campos (excepto estado)
                 update_sql = """
                     UPDATE estudiante
-                    SET usuario=%s, contraseña=%s, correo=%s, telefono=%s, id_grupo=%s, id_pfamilia=%s
+                    SET nombre=%s, usuario=%s, contraseña=%s, correo=%s, telefono=%s, id_grupo=%s, id_pfamilia=%s
                     WHERE id_estud=%s
                 """
                 cursor.execute(update_sql, (
+                    user_data.nombre,
                     user_data.usuario,
                     user_data.contraseña,
                     user_data.correo,
