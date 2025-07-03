@@ -10,8 +10,8 @@ class Student(BaseModel):
     contraseña: str
     correo: str
     telefono: int
-    id_grupo: int
-    id_pfamilia: int
+    grupo: int
+    padre_familia: int
     estado: Optional[int]=1 #consultar el uso de optional
 
     #NOTA IMPORTANTE: Las llaves foráneas y las principales no deben ir en el modelo, solo los datos que se ingresan por medio del servicio POST (Un create por ejemplo)
