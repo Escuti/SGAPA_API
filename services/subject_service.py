@@ -75,8 +75,8 @@ class Subject_Service:
         try:
             self.con.ping(reconnect=True)
             with self.con.cursor() as cursor:
-                dup="SELECT COUNT(*) FROM materias WHERE nombre = %s"
-                cursor.execute(dup, (subject_data.nombre,))
+                dup="SELECT COUNT(*) FROM materias WHERE nombremat = %s"
+                cursor.execute(dup, (subject_data.nombremat,))
                 result=cursor.fetchone()
 
                 if result[0] > 0:
@@ -90,9 +90,9 @@ class Subject_Service:
                         }
                 )
 
-                sql='''INSERT INTO materias (nombre, id_grupo)
-                VALUES ( %s, %s)'''
-                cursor.execute(sql, (subject_data.nombre, subject_data.id_grupo))
+                sql='''INSERT INTO materias (nombremat)
+                VALUES ( %s)'''
+                cursor.execute(sql, (subject_data.nombremat))
                 self.con.commit()
 
                 if cursor.lastrowid:
@@ -121,7 +121,7 @@ class Subject_Service:
                     status_code=500,
                     content={
                         "success": False,
-                        "message": f"Error al crear el grupo {str(e)} ",
+                        "message": f"Error al crear la materia {str(e)} ",
                         "data": None
                     }
                 )
@@ -140,12 +140,11 @@ class Subject_Service:
                 # Actualizar campos (excepto estado)
                 update_sql = """
                     UPDATE materias
-                    SET nombre=%s, id_grupo=%s
+                    SET nombremat=%s
                     WHERE id_materia=%s
                 """
                 cursor.execute(update_sql, (
-                    subject_data.nombre,
-                    subject_data.id_grupo,
+                    subject_data.nombremat,
                     subject_id
                 ))
                 self.con.commit()

@@ -6,4 +6,5 @@ class Assignment(BaseModel):
     titulo: str
     descripcion: str
     fecha: datetime
-    id_grupo: int
+    grupo: int
+    materias: int

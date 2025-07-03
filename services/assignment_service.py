@@ -1,6 +1,7 @@
 from fastapi.responses import JSONResponse
 import pymysql
 import pymysql.cursors
+from fastapi.encoders import jsonable_encoder
 from db.db_mysql import get_db_connection
 from models.assignment_model import Assignment
 
@@ -22,7 +23,7 @@ class Assignment_Service:
                     content={
                         "success": True,
                         "message": "actividades desplegadas",
-                        "data": assignments if assignments else []
+                        "data": jsonable_encoder(assignments) if assignments else [] #el jsonable_encoder permite convertir el datetime a string
                     }
                 )
         except Exception as e:
@@ -90,9 +91,9 @@ class Assignment_Service:
                         }
                 )
 
-                sql='''INSERT INTO actividades (titulo, descripcion, fecha, id_grupo)
+                sql='''INSERT INTO actividades (titulo, descripcion, fecha, grupo, materias)
                 VALUES ( %s, %s, %s, %s)'''
-                cursor.execute(sql, (assignment_data.titulo, assignment_data.descripcion, assignment_data.fecha, assignment_data.id_grupo))
+                cursor.execute(sql, (assignment_data.titulo, assignment_data.descripcion, assignment_data.fecha, assignment_data.grupo, assignment_data.materias))
                 self.con.commit()
 
                 if cursor.lastrowid:
@@ -140,14 +141,15 @@ class Assignment_Service:
                 # Actualizar campos (excepto estado)
                 update_sql = """
                     UPDATE actividades
-                    SET titulo=%s, descripcion=%s, fecha=%s, id_grupo=%s
+                    SET titulo=%s, descripcion=%s, fecha=%s, grupo=%s, materias=%s
                     WHERE id_activid=%s
                 """
                 cursor.execute(update_sql, (
                     assignment_data.titulo,
                     assignment_data.descripcion,
                     assignment_data.fecha,
-                    assignment_data.id_grupo,
+                    assignment_data.grupo,
+                    assignment_data.materias,
                     assignment_id
                 ))
                 self.con.commit()
