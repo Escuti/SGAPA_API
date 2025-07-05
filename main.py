@@ -11,6 +11,8 @@ from routes.routes import routes_sa
 from routes.routes import routes_g
 from routes.routes import routes_su
 from routes.routes import routes_as
+from routes.routes import routes_rgs
+from routes.routes import routes_rca
 
 app=FastAPI()
 app.title="Práctica CRUD"
@@ -28,6 +30,8 @@ app.include_router(routes_sa)
 app.include_router(routes_g)
 app.include_router(routes_su)
 app.include_router(routes_as)
+app.include_router(routes_rgs)
+app.include_router(routes_rca)
 
 app.add_middleware(
     CORSMiddleware,

@@ -7,6 +7,8 @@ from services.subadmin_service import SubAdmin_Service
 from services.group_service import Group_Service
 from services.subject_service import Subject_Service
 from services.assignment_service import Assignment_Service
+from services.rel_group_subject_service import Rel_Group_Subject_Service
+from services.rel_score_service import Rel_Score_Service
 from models.student_model import Student
 from models.professor_model import Professor
 from models.adminPR_model import AdminPR
@@ -15,6 +17,8 @@ from models.subadmin_model import SubAdmin
 from models.group_model import Group
 from models.subject_model import Subject
 from models.assignment_model import Assignment
+from models.rel_group_subject_model import Rel_Group_Subject
+from models.rel_score_model import Rel_Score
 
 #Siempre que voy a crear una ruta, necesito tanto el servicio como el modelo creados anteriormente
 routes_s = APIRouter(prefix="/student", tags=["Student"])
@@ -244,3 +248,45 @@ async def create_assignment(assignment: Assignment):
 @routes_as.put("/update_assignment/{assignment_id}") 
 async def update_assignment(assignment_id: int, assignment_data: Assignment):
     return await assignment_service.update_assignment(assignment_id, assignment_data)
+
+routes_rgs = APIRouter(prefix="/rel_group_subject", tags=["RelGS"])
+
+rel_group_subject_service = Rel_Group_Subject_Service()
+rel_group_subject_model= Rel_Group_Subject
+
+@routes_rgs.get("/get-relGS")
+async def get_all_relGS():
+    return await rel_group_subject_service.get_relGS()
+
+@routes_rgs.get("/get-relGS-id/{id_relGS}")
+async def get_relGS_id(id_relGS: int):
+    return await rel_group_subject_service.get_relGS_by_id(id_relGS)
+
+@routes_rgs.post("/create-relGS")
+async def create_relGS(relGS: Rel_Group_Subject):
+    return await rel_group_subject_service.create_relGS(relGS)
+
+@routes_rgs.put("/update_relGS/{id_relGS}") 
+async def update_relGS(id_relGS: int, relGS_data: Rel_Group_Subject):
+    return await rel_group_subject_service.update_relGS(id_relGS, relGS_data)
+
+routes_rca = APIRouter(prefix="/rel_score", tags=["RelCAL"])
+
+rel_score_service = Rel_Score_Service()
+rel_score_model= Rel_Score
+
+@routes_rca.get("/get-relCAL")
+async def get_all_relCAL():
+    return await rel_score_service.get_relCAL()
+
+@routes_rca.get("/get-relCAL-id/{id_relCAL}")
+async def get_relCAL_id(id_relCAL: int):
+    return await rel_score_service.get_relCAL_by_id(id_relCAL)
+
+@routes_rca.post("/create-relCAL")
+async def create_relCAL(relCAL: Rel_Score):
+    return await rel_score_service.create_relCAL(relCAL)
+
+@routes_rca.put("/update_relCAL/{id_relCAL}") 
+async def update_relCAL(id_relCAL: int, relCAL_data: Rel_Score):
+    return await rel_score_service.update_relCAL(id_relCAL, relCAL_data)
