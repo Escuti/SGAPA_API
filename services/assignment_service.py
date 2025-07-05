@@ -92,7 +92,7 @@ class Assignment_Service:
                 )
 
                 sql='''INSERT INTO actividades (titulo, descripcion, fecha, grupo, materias)
-                VALUES ( %s, %s, %s, %s)'''
+                VALUES ( %s, %s, %s, %s, %s)'''
                 cursor.execute(sql, (assignment_data.titulo, assignment_data.descripcion, assignment_data.fecha, assignment_data.grupo, assignment_data.materias))
                 self.con.commit()
 
