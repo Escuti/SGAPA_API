@@ -91,9 +91,9 @@ class Parent_Service:
                         }
                 )
 
-                sql='''INSERT INTO padre_familia (nombre, correo, contraseña, telefono, estado)
-                VALUES ( %s, %s, %s, %s, %s)'''
-                cursor.execute(sql, (user_data.nombre, user_data.correo, user_data.contraseña, user_data.telefono, user_data.estado))
+                sql='''INSERT INTO padre_familia (nombre, usuario, correo, contraseña, telefono, estado)
+                VALUES ( %s, %s, %s, %s, %s, %s)'''
+                cursor.execute(sql, (user_data.nombre, user_data.usuario, user_data.correo, user_data.contraseña, user_data.telefono, user_data.estado))
                 self.con.commit()
 
                 if cursor.lastrowid:
@@ -249,11 +249,12 @@ class Parent_Service:
                 # Actualizar campos (excepto estado)
                 update_sql = """
                     UPDATE padre_familia
-                    SET nombre=%s, correo=%s, contraseña=%s, telefono=%s
+                    SET nombre=%s, usuario=%s, correo=%s, contraseña=%s, telefono=%s
                     WHERE id_pfamilia=%s
                 """
                 cursor.execute(update_sql, (
                     user_data.nombre,
+                    user_data.usuario,
                     user_data.correo,
                     user_data.contraseña,
                     user_data.telefono,

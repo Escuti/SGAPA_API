@@ -9,6 +9,7 @@ from services.subject_service import Subject_Service
 from services.assignment_service import Assignment_Service
 from services.rel_group_subject_service import Rel_Group_Subject_Service
 from services.rel_score_service import Rel_Score_Service
+from services.userlog_service import UserLog_Service
 from models.student_model import Student
 from models.professor_model import Professor
 from models.adminPR_model import AdminPR
@@ -19,6 +20,7 @@ from models.subject_model import Subject
 from models.assignment_model import Assignment
 from models.rel_group_subject_model import Rel_Group_Subject
 from models.rel_score_model import Rel_Score
+from models.userlog_model import UserLog
 
 #Siempre que voy a crear una ruta, necesito tanto el servicio como el modelo creados anteriormente
 routes_s = APIRouter(prefix="/student", tags=["Student"])
@@ -290,3 +292,12 @@ async def create_relCAL(relCAL: Rel_Score):
 @routes_rca.put("/update_relCAL/{id_relCAL}") 
 async def update_relCAL(id_relCAL: int, relCAL_data: Rel_Score):
     return await rel_score_service.update_relCAL(id_relCAL, relCAL_data)
+
+routes_log = APIRouter(prefix="/userlog", tags=["Login"])
+
+userlog_service = UserLog_Service()
+userlog_model = UserLog
+
+@routes_log.post("/login_user")
+async def login_user(user: UserLog):
+    return await userlog_service.login_user(user)
