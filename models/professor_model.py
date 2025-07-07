@@ -8,3 +8,4 @@ class Professor(BaseModel):
     contraseña: str
     telefono: int
     estado: Optional[int]=1
+    doclogFK: int

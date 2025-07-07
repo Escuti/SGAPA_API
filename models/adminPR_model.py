@@ -7,3 +7,4 @@ class AdminPR(BaseModel):
     correo: str
     telefono: int
     estado: Optional[int]=1
+    adminlogFK: int

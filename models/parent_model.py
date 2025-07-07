@@ -8,3 +8,4 @@ class Parent(BaseModel): #Podría ser necesario agregar el dato usuario
     contraseña: str
     telefono: int
     estado: Optional[int]=1
+    acudlogFK: int

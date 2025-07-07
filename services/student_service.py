@@ -1,3 +1,4 @@
+from passlib.hash import bcrypt 
 from fastapi.responses import JSONResponse
 import pymysql
 import pymysql.cursors
@@ -99,9 +100,28 @@ class StudentService:
                         }
                 )
 
-                sql='''INSERT INTO estudiante (nombre, usuario, contraseña, correo, telefono, grupo, padre_familia, estado)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
-                cursor.execute(sql, (user_data.nombre, user_data.usuario, user_data.contraseña, user_data.correo, user_data.telefono, user_data.grupo, user_data.padre_familia, user_data.estado))
+                #Proceso de encriptación automática de contraseña, cada vez que se crea un registro nuevo.
+                password_hash = bcrypt.hash(user_data.contraseña)
+
+                insert_log = '''
+                INSERT INTO usuarioslog (username, email, password_hash, tipo_usuario)
+                VALUES (%s, %s, %s, %s)''' #Se incluye tanto correo como contraseña en el insert a usuarioslog
+
+                cursor.execute(insert_log, (user_data.usuario, user_data.correo, password_hash, "estudiante"))
+                id_userlog = cursor.lastrowid
+
+                sql='''INSERT INTO estudiante (nombre, usuario, contraseña, correo, telefono, grupo, padre_familia, estado, estudlogFK)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+                cursor.execute(sql, (user_data.nombre,
+                                    user_data.usuario, 
+                                    user_data.contraseña, 
+                                    user_data.correo, 
+                                    user_data.telefono, 
+                                    user_data.grupo, 
+                                    user_data.padre_familia, 
+                                    user_data.estado,
+                                    id_userlog))
+
                 self.con.commit() # ES NECESARIO QUE LA CREACIÓN DE USUARIO INCLUYA QUÉ ROL TIENE ESTE USUARIO, AGREGAR TABLA EN BD Y EN COMODINES DE SENTENCIA SQL
 
                 if cursor.lastrowid:
@@ -279,6 +299,21 @@ class StudentService:
                     user_data.padre_familia,
                     user_id
                 ))
+                #Encriptador automático de contraseña
+                password_hash = bcrypt.hash(user_data.contraseña)
+
+                update_log = '''
+                UPDATE usuarioslog SET username=%s, password_hash=%s
+                WHERE id_userlog = (
+                SELECT estudlogFK FROM estudiante WHERE id_estud = %s)
+                '''  #Actualización de credenciales desde update
+
+                cursor.execute(update_log, (
+                    user_data.usuario,
+                    password_hash,
+                    user_id
+                ))
+
                 self.con.commit()
 
                 if cursor.rowcount > 0:

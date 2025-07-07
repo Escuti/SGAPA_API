@@ -1,3 +1,4 @@
+from passlib.hash import bcrypt
 from fastapi.responses import JSONResponse
 import pymysql
 import pymysql.cursors
@@ -91,9 +92,19 @@ class Parent_Service:
                         }
                 )
 
-                sql='''INSERT INTO padre_familia (nombre, usuario, correo, contraseña, telefono, estado)
-                VALUES ( %s, %s, %s, %s, %s, %s)'''
-                cursor.execute(sql, (user_data.nombre, user_data.usuario, user_data.correo, user_data.contraseña, user_data.telefono, user_data.estado))
+                #Proceso de encriptación automática de contraseña, cada vez que se crea un registro nuevo.
+                password_hash = bcrypt.hash(user_data.contraseña)
+
+                insert_log = '''
+                INSERT INTO usuarioslog (username, email, password_hash, tipo_usuario)
+                VALUES (%s, %s, %s, %s)''' #Se incluye tanto correo como contraseña en el insert a usuarioslog
+
+                cursor.execute(insert_log, (user_data.usuario, user_data.correo, password_hash, "acudiente"))
+                id_userlog = cursor.lastrowid
+
+                sql='''INSERT INTO padre_familia (nombre, usuario, correo, contraseña, telefono, estado, acudlogFK)
+                VALUES ( %s, %s, %s, %s, %s, %s, %s)'''
+                cursor.execute(sql, (user_data.nombre, user_data.usuario, user_data.correo, user_data.contraseña, user_data.telefono, user_data.estado, id_userlog))
                 self.con.commit()
 
                 if cursor.lastrowid:
@@ -260,6 +271,22 @@ class Parent_Service:
                     user_data.telefono,
                     user_id
                 ))
+
+                #Re-formateamos contraseña ingresada en update
+                password_hash = bcrypt.hash(user_data.contraseña)
+
+                update_log = '''
+                UPDATE usuarioslog SET username=%s, password_hash=%s
+                WHERE id_userlog = (
+                SELECT acudlogFK FROM padre_familia WHERE id_pfamilia = %s)
+                '''  #Actualización de credenciales desde update
+
+                cursor.execute(update_log, (
+                    user_data.usuario,
+                    password_hash,
+                    user_id
+                ))
+
                 self.con.commit()
 
                 if cursor.rowcount > 0:
