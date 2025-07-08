@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Form
+from fastapi import UploadFile, File #Se importa el UploadFile y el File específico en donde se almacena el archivo de entrega para relCAL
 from services.student_service import StudentService
 from services.professor_service import ProfessorService
 from services.adminPR_service import AdminPR_Service
@@ -285,13 +286,26 @@ async def get_all_relCAL():
 async def get_relCAL_id(id_relCAL: int):
     return await rel_score_service.get_relCAL_by_id(id_relCAL)
 
-@routes_rca.post("/create-relCAL")
-async def create_relCAL(relCAL: Rel_Score):
-    return await rel_score_service.create_relCAL(relCAL)
+@routes_rca.post("/upload-relCAL") #La ruta ha sido definida de esta forma debido a que swagger no podía procesar las peticiones debido al uso de UploadFile
+async def upload_relCAL(
+    file: UploadFile = File(...),
+    estudFK: int = Form(...),  
+    actividFK: int = Form(...),  
+    comentario: str = Form("")  
+):
+    relCAL_data = Rel_Score(
+        estudFK=estudFK,
+        actividFK=actividFK,
+        comentario=comentario,
+        nota=0,        
+        feedback="",
+        archivo_url=""  
+    )
+    return await rel_score_service.upload_relCAL(file, relCAL_data, estudFK)
 
-@routes_rca.put("/update_relCAL/{id_relCAL}") 
-async def update_relCAL(id_relCAL: int, relCAL_data: Rel_Score):
-    return await rel_score_service.update_relCAL(id_relCAL, relCAL_data)
+@routes_rca.put("/grade-relCAL")
+async def grade_relCAL(relCAL_data: Rel_Score):
+    return await rel_score_service.grade_relCAL(relCAL_data)
 
 routes_log = APIRouter(prefix="/userlog", tags=["Login"])
 
