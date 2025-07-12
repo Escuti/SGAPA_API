@@ -78,67 +78,56 @@ class Rel_Score_Service:
 
         try:
             self.con.ping(reconnect=True)
-            os.makedirs("uploads", exist_ok=True)#Uso del OS para que se cree la carpeta donde se almacerán los archivos de la actividad
-                                                #Lo optimo es cambiar este OS por una conexión con servicios cloud como AWS, pero se opta por esto temporalmente a la actual version 0.11.4 API y 0.7.0 Front
-                                                
+            os.makedirs("uploads", exist_ok=True)
             file_path = f"uploads/{estudFK}_{file.filename}"
+
             with open(file_path, "wb") as buffer:
                 buffer.write(await file.read())
 
             with self.con.cursor() as cursor:
-
+                # 1. Verificar si existe el registro (usando actividFK y estudFK)
                 cursor.execute(
-                    "SELECT COUNT(*) FROM rel_calificacion WHERE estudFK = %s AND actividFK = %s",
-                    (estudFK, relCAL_data.actividFK)
+                    "SELECT id_relCAL FROM rel_calificacion WHERE actividFK = %s",
+                    (relCAL_data.actividFK)
                 )
-                if cursor.fetchone()[0] > 0:
-                    os.remove(file_path)
+                relCAL = cursor.fetchone()
+
+                if not relCAL:
                     return JSONResponse(
-                        status_code=400,
-                        content={
-                            "success": False,
-                            "message": "Una entrega ya ha sido subida",
-                            "data": None
-                        }
+                        status_code=404,
+                        content={"success": False, "message": "Entrega no encontrada"}
                     )
 
-                sql='''INSERT INTO rel_calificacion (estudFK, actividFK, archivo_url, comentario)
-                VALUES ( %s, %s, %s, %s)'''
-                cursor.execute(sql, (relCAL_data.estudFK, relCAL_data.actividFK, file_path, relCAL_data.comentario))
+                # 2. Actualizar el registro existente
+                sql = '''
+                    UPDATE rel_calificacion
+                    SET estudFK = %s, archivo_url = %s, comentario = %s
+                    WHERE id_relCAL = %s
+                '''
+                cursor.execute(sql, (
+                    estudFK,
+                    file_path,
+                    relCAL_data.comentario,
+                    relCAL[0]  # id_relCAL obtenido en la consulta anterior
+                ))
                 self.con.commit()
 
-                if cursor.lastrowid:
-                     
-                    return JSONResponse(
-                        status_code=201,
-                        content={
-                            "success": True,
-                            "message": "Entrega subida exitosamente",
-                            "data": {"id_relCAL" : cursor.lastrowid}
-                        }
-                )
-                else:    
-                    return JSONResponse(
-                        status_code=400,
-                        content={
-                            "success": False,
-                            "message": "No se pudo subir la entrega",
-                            "data": None
-                        }
-                )
-
-        except Exception as e:
-            self.con.rollback()
-            if 'file_path' in locals():  # Elimina archivo en caso de error
-                os.remove(file_path)
-            return JSONResponse(
-                    status_code=500,
+                return JSONResponse(
+                    status_code=200,
                     content={
-                        "success": False,
-                        "message": f"Error al subir la entrega {str(e)} ",
-                        "data": None
+                        "success": True,
+                        "message": "Entrega actualizada",
+                        "data": {"id_relCAL": relCAL[0]}
                     }
                 )
+        except Exception as e:
+            self.con.rollback()
+            if 'file_path' in locals():
+                os.remove(file_path)
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "message": f"Error: {str(e)}"}
+            )
     
     async def grade_relCAL(self, relCAL_data: Rel_Score): #Servicio que permite calificar actividades al docente
         try:

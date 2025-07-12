@@ -76,56 +76,51 @@ class Assignment_Service:
         try:
             self.con.ping(reconnect=True)
             with self.con.cursor() as cursor:
-                dup="SELECT COUNT(*) FROM actividades WHERE titulo = %s"
+                # 1. Verificar si la actividad ya existe
+                dup = "SELECT COUNT(*) FROM actividades WHERE titulo = %s"
                 cursor.execute(dup, (assignment_data.titulo,))
-                result=cursor.fetchone()
-
-                if result[0] > 0:
-                    
+                if cursor.fetchone()[0] > 0:
                     return JSONResponse(
                         status_code=400,
-                        content={
-                            "success": False,
-                            "message": "La actividad ya existe",
-                            "data": None
-                        }
-                )
+                        content={"success": False, "message": "La actividad ya existe"}
+                    )
 
-                sql='''INSERT INTO actividades (titulo, descripcion, fecha, grupo, materias)
-                VALUES ( %s, %s, %s, %s, %s)'''
-                cursor.execute(sql, (assignment_data.titulo, assignment_data.descripcion, assignment_data.fecha, assignment_data.grupo, assignment_data.materias))
+                # 2. Insertar en la tabla actividades
+                sql_actividad = '''
+                    INSERT INTO actividades (titulo, descripcion, fecha, grupo, materias)
+                    VALUES (%s, %s, %s, %s, %s)
+                '''
+                cursor.execute(sql_actividad, (
+                    assignment_data.titulo,
+                    assignment_data.descripcion,
+                    assignment_data.fecha,
+                    assignment_data.grupo,
+                    assignment_data.materias
+                ))
+                id_activid = cursor.lastrowid  # Obtenemos el ID de la nueva actividad
+
+                # 3. Insertar en rel_calificacion 
+                sql_relCAL = '''
+                    INSERT INTO rel_calificacion (actividFK)
+                    VALUES (%s)
+                '''
+                cursor.execute(sql_relCAL, (id_activid,))
                 self.con.commit()
 
-                if cursor.lastrowid:
-                     
-                    return JSONResponse(
-                        status_code=201,
-                        content={
-                            "success": True,
-                            "message": "Se ha creado la actividad con éxito",
-                            "data": {"assignment_id" : cursor.lastrowid}
-                        }
+                return JSONResponse(
+                    status_code=201,
+                    content={
+                        "success": True,
+                        "message": "Actividad creada y registro de calificación inicializado",
+                        "data": {"assignment_id": id_activid}
+                    }
                 )
-                else:    
-                    return JSONResponse(
-                        status_code=400,
-                        content={
-                            "success": False,
-                            "message": "No se pudo crear la actividad",
-                            "data": None
-                        }
-                )
-
         except Exception as e:
             self.con.rollback()
             return JSONResponse(
-                    status_code=500,
-                    content={
-                        "success": False,
-                        "message": f"Error al crear el actividad {str(e)} ",
-                        "data": None
-                    }
-                )
+                status_code=500,
+                content={"success": False, "message": f"Error: {str(e)}"}
+            )
     
     async def update_assignment(self, assignment_id: int, assignment_data: Assignment):
         try:
