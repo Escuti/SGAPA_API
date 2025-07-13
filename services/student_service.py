@@ -324,3 +324,36 @@ class StudentService:
         except Exception as e:
             self.con.rollback()
             return JSONResponse(content={"success": False, "message": f"Error al actualizar estudiante: {str(e)}"}, status_code=500)
+        
+    async def get_student_by_parent(self, id_pfamilia: int):
+        conn = None
+        try:
+            conn = get_db_connection()
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute("""
+                    SELECT id_estud, nombre, grupo 
+                    FROM estudiante 
+                    WHERE padre_familia = %s
+                """, (id_pfamilia,))
+                student = cursor.fetchall()
+                
+                if not student:
+                    return JSONResponse(
+                        status_code=404,
+                        detail=f"No se encontró estudiante para el padre/acudiente con ID {id_pfamilia}"
+                    )
+                
+                return JSONResponse(
+                    status_code=200,
+                    content={
+                        "success": True,
+                        "message": "Estudiante encontrado",
+                        "data": student
+                    }
+                )
+                
+        except Exception as e:
+            return JSONResponse(
+                status_code=500,
+                detail=f"Error interno: {str(e)}"
+            )

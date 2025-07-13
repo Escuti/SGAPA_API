@@ -57,6 +57,10 @@ async def update_user(user_id: int):
 async def update_user(user_id: int, user_data: Student):
     return await student_service.update_user(user_id, user_data)
 
+@routes_s.get("/by-parent/{id_pfamilia}")
+async def get_student_by_parent(id_pfamilia: int):
+    return await student_service.get_student_by_parent(id_pfamilia)
+
 routes_p = APIRouter(prefix="/professor", tags=["Professor"])
 
 professor_service = ProfessorService()
