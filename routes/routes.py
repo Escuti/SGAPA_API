@@ -286,7 +286,7 @@ async def get_all_relCAL():
 async def get_relCAL_id(id_relCAL: int):
     return await rel_score_service.get_relCAL_by_id(id_relCAL)
 
-@routes_rca.post("/upload-relCAL") #La ruta ha sido definida de esta forma debido a que swagger no podía procesar las peticiones debido al uso de UploadFile
+@routes_rca.put("/upload-relCAL") #La ruta ha sido definida de esta forma debido a que swagger no podía procesar las peticiones debido al uso de UploadFile
 async def upload_relCAL(
     file: UploadFile = File(...),
     estudFK: int = Form(...),  
